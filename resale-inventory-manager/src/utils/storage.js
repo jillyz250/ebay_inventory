@@ -185,13 +185,28 @@ export const exportData = () => {
   };
 };
 
-export const importData = (data) => {
+export const importData = (data, mode = 'replace') => {
   try {
-    if (data.purchases && Array.isArray(data.purchases)) {
-      saveToStorage(STORAGE_KEYS.PURCHASES, data.purchases);
-    }
-    if (data.items && Array.isArray(data.items)) {
-      saveToStorage(STORAGE_KEYS.ITEMS, data.items);
+    if (mode === 'merge') {
+      // Merge mode: add new data to existing data
+      if (data.purchases && Array.isArray(data.purchases)) {
+        const existingPurchases = getPurchases();
+        const mergedPurchases = [...existingPurchases, ...data.purchases];
+        saveToStorage(STORAGE_KEYS.PURCHASES, mergedPurchases);
+      }
+      if (data.items && Array.isArray(data.items)) {
+        const existingItems = getItems();
+        const mergedItems = [...existingItems, ...data.items];
+        saveToStorage(STORAGE_KEYS.ITEMS, mergedItems);
+      }
+    } else {
+      // Replace mode: replace all existing data
+      if (data.purchases && Array.isArray(data.purchases)) {
+        saveToStorage(STORAGE_KEYS.PURCHASES, data.purchases);
+      }
+      if (data.items && Array.isArray(data.items)) {
+        saveToStorage(STORAGE_KEYS.ITEMS, data.items);
+      }
     }
     return true;
   } catch (error) {

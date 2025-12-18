@@ -13,6 +13,7 @@ export const ImportExportModal = ({
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [importMode, setImportMode] = useState('merge'); // 'merge' or 'replace'
 
   const handleExport = () => {
     const data = onExport();
@@ -58,10 +59,13 @@ export const ImportExportModal = ({
         throw new Error('Invalid data format. Purchases and items must be arrays.');
       }
 
-      // Import data
-      const imported = onImport(data);
+      // Import data with merge or replace mode
+      const imported = onImport(data, importMode);
       if (imported) {
-        setSuccess('Data imported successfully!');
+        const message = importMode === 'merge'
+          ? 'Data added successfully!'
+          : 'Data imported successfully!';
+        setSuccess(message);
         setTimeout(() => {
           setSuccess('');
           setImportFile(null);
@@ -111,6 +115,36 @@ export const ImportExportModal = ({
           </p>
 
           <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Import Mode
+            </label>
+            <div className="space-y-2 mb-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="merge"
+                  checked={importMode === 'merge'}
+                  onChange={(e) => setImportMode(e.target.value)}
+                  className="mr-2"
+                />
+                <span className="text-sm">
+                  <strong>Add to existing data</strong> - Merge new purchases and items with current data
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="replace"
+                  checked={importMode === 'replace'}
+                  onChange={(e) => setImportMode(e.target.value)}
+                  className="mr-2"
+                />
+                <span className="text-sm">
+                  <strong>Replace all data</strong> - Delete existing data and import new data
+                </span>
+              </label>
+            </div>
+
             <input
               type="file"
               accept=".json"
@@ -130,12 +164,23 @@ export const ImportExportModal = ({
             )}
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4">
-            <p className="text-sm text-yellow-800">
-              <strong>Warning:</strong> Importing will replace all existing data.
-              Make sure to export your current data first if you want to keep it.
-            </p>
-          </div>
+          {importMode === 'replace' && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Warning:</strong> Replacing will delete all existing data.
+                Make sure to export your current data first if you want to keep it.
+              </p>
+            </div>
+          )}
+
+          {importMode === 'merge' && (
+            <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> New purchases and items will be added to your existing data.
+                Duplicate entries may be created if you import the same file multiple times.
+              </p>
+            </div>
+          )}
 
           <Button
             onClick={handleImport}

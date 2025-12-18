@@ -95,8 +95,8 @@ export const useInventory = () => {
     return exportData();
   }, []);
 
-  const handleImport = useCallback((data) => {
-    const success = importData(data);
+  const handleImport = useCallback((data, mode = 'replace') => {
+    const success = importData(data, mode);
     if (success) {
       loadData();
     }
